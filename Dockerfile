@@ -4,4 +4,4 @@ COPY package*.json ./
 RUN npm install --legacy-peer-deps
 COPY . .
 EXPOSE 3000 3001
-CMD ["node", "src/index.js"]
+CMD ["sh", "start.sh"]
