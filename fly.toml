@@ -1,5 +1,10 @@
+# fly.toml app configuration file generated for trade-master-bot on 2026-09-22T18:43:39Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
 app = "trade-master-bot"
-primary_region = "fra"
+primary_region = 'fra'
 
 [build]
   dockerfile = "Dockerfile"
@@ -12,6 +17,11 @@ primary_region = "fra"
   min_machines_running = 1
 
 [[vm]]
-  cpu_kind = "shared"
+  cpu_kind = 'shared'
   cpus = 1
   memory_mb = 256
+
+[[restart]]
+  policy = 'always'
+  processes = ['app']
+  retries = 500
