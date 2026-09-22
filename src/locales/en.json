@@ -1,0 +1,39 @@
+{
+  "common": {
+    "back": "⬅️ Back",
+    "cancel": "❌ Cancel",
+    "confirm": "✅ Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "⏳ Loading...",
+    "error_generic": "⚠️ An error occurred. Please try again later.",
+    "not_found": "🔍 Not found.",
+    "page": "Page"
+  },
+  "subscription": {
+    "title": "💎 Subscription plans",
+    "current_plan": "Your current plan",
+    "expires_on": "Valid until",
+    "no_active": "You don't have a paid plan yet",
+    "choose_plan": "Choose your plan:",
+    "payment_success": "✅ Payment successful! Your plan is now active.",
+    "payment_failed": "❌ Payment failed. Please try again."
+  },
+  "courses": {
+    "title": "📚 Courses",
+    "no_courses": "No courses available yet.",
+    "lesson_completed": "✅ Lesson completed! +{{xp}} XP",
+    "quiz_start": "📝 Quiz started"
+  },
+  "support": {
+    "title": "💬 User support",
+    "ticket_created": "✅ Your request has been logged. A specialist will reply soon.",
+    "describe_issue": "Please describe your issue:"
+  },
+  "referral": {
+    "title": "🎁 Referral program",
+    "your_link": "Your personal link",
+    "invited": "You've invited {{count}} people",
+    "earnings": "Your earnings"
+  }
+}

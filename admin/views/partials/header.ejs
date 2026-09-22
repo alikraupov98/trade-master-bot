@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'TradeMaster AI TJ — Админ-панель' %></title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('admin_theme') || 'dark';
+      const resolved = saved === 'auto'
+        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : saved;
+      document.documentElement.setAttribute('data-theme', resolved);
+      document.documentElement.setAttribute('data-theme-mode', saved);
+    })();
+  </script>
+  <link rel="stylesheet" href="/public/css/admin.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button type="button" class="burger-btn" id="burgerBtn" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-logo">🤖 <span>TradeMaster AI TJ</span></div>
+    <div class="topbar-title"><%= typeof pageTitle !== 'undefined' ? pageTitle : '' %></div>
+
+    <div class="topbar-actions">
+      <button type="button" class="theme-toggle" id="themeToggle" aria-label="Тема оформления" title="Сменить тему">
+        <span id="themeIcon">🌙</span>
+      </button>
+      <div class="notif-wrap">
+        <button type="button" class="notif-bell" id="notifBell" aria-label="Уведомления">
+          🔔
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-header">Уведомления</div>
+          <div class="notif-list" id="notifList">
+            <div class="notif-empty">Пока ничего нового</div>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-admin"><%= typeof admin !== 'undefined' && admin ? admin.name : '' %></div>
+    </div>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <nav id="sidebarNav">
+        <a href="/dashboard" data-path="/dashboard"><span class="nav-icon">📊</span> Дашборд</a>
+        <a href="/users" data-path="/users"><span class="nav-icon">👥</span> Пользователи</a>
+        <a href="/courses" data-path="/courses"><span class="nav-icon">📚</span> Курсы</a>
+        <a href="/payments" data-path="/payments">
+          <span class="nav-icon">💳</span> Платежи
+          <% if (typeof badgeCounts !== 'undefined' && badgeCounts.payments > 0) { %>
+            <span class="nav-badge" id="badge-payments"><%= badgeCounts.payments %></span>
+          <% } %>
+        </a>
+        <a href="/signals" data-path="/signals"><span class="nav-icon">📈</span> Сигналы</a>
+        <a href="/broadcasts" data-path="/broadcasts"><span class="nav-icon">📢</span> Рассылки</a>
+        <a href="/analytics" data-path="/analytics"><span class="nav-icon">📉</span> Аналитика</a>
+        <a href="/support" data-path="/support">
+          <span class="nav-icon">💬</span> Поддержка
+          <% if (typeof badgeCounts !== 'undefined' && badgeCounts.support > 0) { %>
+            <span class="nav-badge" id="badge-support"><%= badgeCounts.support %></span>
+          <% } %>
+        </a>
+        <div class="sidebar-section">🤖 AI-модуль</div>
+        <a href="/ai-chats" class="ai-link" data-path="/ai-chats"><span class="nav-icon">💬</span> AI-Чаты</a>
+        <a href="/ai-prompts" class="ai-link" data-path="/ai-prompts"><span class="nav-icon">📝</span> AI-Промпты</a>
+        <a href="/ai-knowledge" class="ai-link" data-path="/ai-knowledge"><span class="nav-icon">🧠</span> База знаний</a>
+        <a href="/ai-usage" class="ai-link" data-path="/ai-usage"><span class="nav-icon">📊</span> AI-Статистика</a>
+        <a href="/settings" data-path="/settings"><span class="nav-icon">⚙️</span> Настройки</a>
+      </nav>
+      <div class="sidebar-footer">
+        <span><%= typeof admin !== 'undefined' && admin ? admin.name : '' %></span>
+        <a href="/logout">Выход</a>
+      </div>
+    </aside>
+    <main class="content" id="mainContent">

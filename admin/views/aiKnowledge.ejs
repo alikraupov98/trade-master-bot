@@ -1,0 +1,86 @@
+<%- include('partials/header', { pageTitle: 'База знаний' }) %>
+
+<h1>🧠 База знаний (RAG)</h1>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value"><%= totalDocuments %></div>
+    <div class="stat-label">Документов</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= totalChunks %></div>
+    <div class="stat-label">Векторизованных фрагментов</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>📤 Загрузить новый документ</h3>
+  <form method="POST" action="/ai-knowledge/upload" enctype="multipart/form-data">
+    <label>Название</label>
+    <input type="text" name="title" placeholder="Например: Основы риск-менеджмента" required />
+
+    <label>Язык</label>
+    <select name="language">
+      <option value="tg">Тоҷикӣ</option>
+      <option value="ru">Русский</option>
+      <option value="en">English</option>
+    </select>
+
+    <label>Теги (через запятую)</label>
+    <input type="text" name="tags" placeholder="риск, форекс, начинающим" />
+
+    <label>Файл (PDF, DOCX, TXT, MD)</label>
+    <input type="file" name="file" accept=".pdf,.docx,.txt,.md" required />
+
+    <button type="submit" class="btn">Загрузить и векторизовать</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>🔍 Проверить, что найдёт AI-наставник</h3>
+  <form method="GET" action="/ai-knowledge/search">
+    <input type="text" name="q" placeholder="Введите тестовый вопрос..." value="<%= query %>" />
+    <button type="submit" class="btn">Найти</button>
+  </form>
+
+  <% if (searchResults) { %>
+    <h4>Результаты (<%= searchResults.length %>)</h4>
+    <% searchResults.forEach(r => { %>
+      <div class="knowledge-chunk">
+        <strong><%= r.title %></strong>
+        <% if (r.score) { %><span class="badge">score: <%= r.score.toFixed(3) %></span><% } %>
+        <p><%= r.chunkText.slice(0, 300) %>...</p>
+      </div>
+    <% }) %>
+    <% if (searchResults.length === 0) { %><p class="muted">Ничего не найдено — AI-наставник ответит без RAG-контекста.</p><% } %>
+  <% } %>
+</div>
+
+<div class="card">
+  <h3>📄 Загруженные документы</h3>
+  <table class="data-table">
+    <thead><tr><th>Название</th><th>Тип</th><th>Язык</th><th>Фрагментов</th><th>Обновлён</th><th></th></tr></thead>
+    <tbody>
+      <% documents.forEach(doc => { %>
+        <tr>
+          <td><%= doc._id %></td>
+          <td><%= doc.sourceType %></td>
+          <td><%= doc.language %></td>
+          <td><%= doc.chunks %></td>
+          <td><%= new Date(doc.updatedAt).toLocaleString('ru-RU') %></td>
+          <td>
+            <form method="POST" action="/ai-knowledge/delete" onsubmit="return confirm('Удалить документ и все его фрагменты?')">
+              <input type="hidden" name="title" value="<%= doc._id %>" />
+              <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (documents.length === 0) { %>
+        <tr><td colspan="6" class="empty-row">Документов пока нет</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<%- include('partials/footer') %>

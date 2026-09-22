@@ -1,0 +1,48 @@
+<%- include('partials/header', { pageTitle: 'Новый сигнал' }) %>
+
+<a href="/signals" class="btn btn-sm">← К сигналам</a>
+
+<h1 style="margin-top:10px">➕ Новый торговый сигнал</h1>
+<p class="muted">Сигнал будет разослан всем пользователям с достаточным тарифом сразу после создания.</p>
+
+<div class="card">
+  <form method="POST" action="/signals" onsubmit="return confirm('Разослать этот сигнал всем подходящим пользователям?')">
+    <label>Пара</label>
+    <input type="text" name="pair" placeholder="BTCUSDT" required />
+
+    <label>Направление</label>
+    <select name="direction">
+      <option value="long">📈 LONG (покупка)</option>
+      <option value="short">📉 SHORT (продажа)</option>
+    </select>
+
+    <label>Timeframe</label>
+    <input type="text" name="timeframe" value="4h" />
+
+    <label>Entry price</label>
+    <input type="number" step="any" name="entryPrice" required />
+
+    <label>Stop-Loss</label>
+    <input type="number" step="any" name="stopLoss" required />
+
+    <label>Take-Profit (через запятую, можно несколько)</label>
+    <input type="text" name="takeProfit" placeholder="65000, 67000, 70000" required />
+
+    <label>Требуемый тариф для получения</label>
+    <select name="requiredPlan">
+      <option value="gold" selected>Gold</option>
+      <option value="diamond">Diamond</option>
+    </select>
+
+    <label>Комментарий (тоҷикӣ)</label>
+    <textarea name="descTg" rows="2"></textarea>
+    <label>Комментарий (русский)</label>
+    <textarea name="descRu" rows="2"></textarea>
+    <label>Комментарий (English)</label>
+    <textarea name="descEn" rows="2"></textarea>
+
+    <button type="submit" class="btn">📤 Создать и разослать</button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

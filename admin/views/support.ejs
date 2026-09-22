@@ -1,0 +1,33 @@
+<%- include('partials/header', { pageTitle: 'Поддержка' }) %>
+
+<h1>💬 Тикеты поддержки</h1>
+
+<div class="filter-bar">
+  <a href="/support?status=open" class="btn btn-sm <%= status === 'open' ? '' : 'btn-outline' %>">🟡 Открытые</a>
+  <a href="/support?status=answered" class="btn btn-sm <%= status === 'answered' ? '' : 'btn-outline' %>">🟢 Отвечены</a>
+  <a href="/support?status=closed" class="btn btn-sm <%= status === 'closed' ? '' : 'btn-outline' %>">⚪ Закрытые</a>
+</div>
+
+<table class="data-table">
+  <thead><tr><th>Пользователь</th><th>Тема</th><th>Источник</th><th>Обновлён</th><th></th></tr></thead>
+  <tbody>
+    <% tickets.forEach(ticket => { %>
+      <tr>
+        <td><%= ticket.user?.firstName || '—' %><% if (ticket.user?.username) { %> (@<%= ticket.user.username %>)<% } %></td>
+        <td><%= ticket.subject %></td>
+        <td><%= ticket.source === 'ai_escalation' ? '🆘 От AI' : '✍️ Вручную' %></td>
+        <td><%= new Date(ticket.updatedAt).toLocaleString('ru-RU') %></td>
+        <td><a href="/support/<%= ticket._id %>" class="btn btn-sm">Открыть</a></td>
+      </tr>
+    <% }) %>
+    <% if (tickets.length === 0) { %><tr><td colspan="5" class="empty-row">Тикетов нет</td></tr><% } %>
+  </tbody>
+</table>
+
+<div class="pagination">
+  <% for (let p = 1; p <= totalPages; p++) { %>
+    <a href="/support?page=<%= p %>&status=<%= status %>" class="<%= p === page ? 'active' : '' %>"><%= p %></a>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

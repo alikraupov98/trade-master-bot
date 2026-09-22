@@ -1,0 +1,81 @@
+<%- include('partials/header', { pageTitle: 'AI-Промпты' }) %>
+
+<h1>📝 Редактор AI-промптов</h1>
+
+<form class="filter-bar" method="GET" action="/ai-prompts">
+  <select name="role" onchange="this.form.submit()">
+    <% roles.forEach(r => { %><option value="<%= r %>" <%= r === role ? 'selected' : '' %>><%= r %></option><% }) %>
+  </select>
+  <select name="language" onchange="this.form.submit()">
+    <% langs.forEach(l => { %><option value="<%= l %>" <%= l === language ? 'selected' : '' %>><%= l %></option><% }) %>
+  </select>
+  <span class="badge <%= isOverride ? 'badge-good' : '' %>"><%= isOverride ? '✏️ Кастомная версия' : '⚙️ Дефолтный промпт' %></span>
+</form>
+
+<div class="card">
+  <form id="promptForm" method="POST" action="/ai-prompts/save">
+    <input type="hidden" name="role" value="<%= role %>" />
+    <input type="hidden" name="language" value="<%= language %>" />
+    <label>Системный промпт (роль: <%= role %>, язык: <%= language %>)</label>
+    <textarea name="promptText" id="promptText" rows="14"><%= currentText %></textarea>
+    <div style="margin-top:12px; display:flex; gap:10px;">
+      <button type="submit" class="btn">💾 Сохранить как активную версию</button>
+      <% if (isOverride) { %>
+        <button type="submit" formaction="/ai-prompts/reset" class="btn btn-danger">↩️ Сбросить к дефолту</button>
+      <% } %>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>🧪 Тестировать промпт в реальном времени</h3>
+  <input type="text" id="testQuestion" placeholder="Введите тестовый вопрос пользователя..." />
+  <button type="button" class="btn" onclick="runTest()" style="margin-top:10px">Отправить тест</button>
+  <p id="testStatus" class="muted"></p>
+  <div id="testResult" class="knowledge-chunk" style="display:none"></div>
+</div>
+
+<div class="card">
+  <h3>🕓 История версий</h3>
+  <table class="data-table">
+    <thead><tr><th>Версия</th><th>Активна</th><th>Обновлён</th></tr></thead>
+    <tbody>
+      <% history.forEach(h => { %>
+        <tr><td>v<%= h.version %></td><td><%= h.isActive ? '✅' : '—' %></td><td><%= new Date(h.updatedAt).toLocaleString('ru-RU') %></td></tr>
+      <% }) %>
+      <% if (history.length === 0) { %><tr><td colspan="3" class="empty-row">Кастомных версий пока нет</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function runTest() {
+    const promptText = document.getElementById('promptText').value;
+    const testQuestion = document.getElementById('testQuestion').value;
+    const statusEl = document.getElementById('testStatus');
+    const resultEl = document.getElementById('testResult');
+    if (!testQuestion) { statusEl.textContent = 'Введите тестовый вопрос.'; return; }
+
+    statusEl.textContent = 'Отправка...';
+    resultEl.style.display = 'none';
+    try {
+      const res = await fetch('/ai-prompts/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ promptText, testQuestion, language: '<%= language %>' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        statusEl.textContent = 'Провайдер: ' + data.provider;
+        resultEl.textContent = data.response;
+        resultEl.style.display = 'block';
+      } else {
+        statusEl.textContent = 'Ошибка: ' + data.error;
+      }
+    } catch (err) {
+      statusEl.textContent = 'Ошибка сети';
+    }
+  }
+</script>
+
+<%- include('partials/footer') %>

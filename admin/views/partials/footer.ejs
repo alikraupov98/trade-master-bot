@@ -1,0 +1,158 @@
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    (function () {
+      const burgerBtn = document.getElementById('burgerBtn');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+
+      function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('visible');
+        burgerBtn.classList.add('active');
+      }
+      function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('visible');
+        burgerBtn.classList.remove('active');
+      }
+      burgerBtn?.addEventListener('click', () => {
+        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+      });
+      overlay?.addEventListener('click', closeSidebar);
+      document.querySelectorAll('#sidebarNav a').forEach((link) => {
+        link.addEventListener('click', closeSidebar);
+      });
+
+      const currentPath = window.location.pathname;
+      document.querySelectorAll('#sidebarNav a[data-path]').forEach((link) => {
+        const linkPath = link.getAttribute('data-path');
+        if (currentPath === linkPath || currentPath.startsWith(linkPath + '/')) {
+          link.classList.add('active');
+        }
+      });
+
+      document.getElementById('mainContent')?.classList.add('fade-in');
+
+      const THEME_ORDER = ['dark', 'light', 'auto'];
+      const THEME_ICONS = { dark: '🌙', light: '☀️', auto: '🖥️' };
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+
+      function applyTheme(mode) {
+        const resolved = mode === 'auto'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : mode;
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme-mode', mode);
+        if (themeIcon) themeIcon.textContent = THEME_ICONS[mode];
+        localStorage.setItem('admin_theme', mode);
+      }
+
+      themeToggle?.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme-mode') || 'dark';
+        const nextIndex = (THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length;
+        applyTheme(THEME_ORDER[nextIndex]);
+      });
+
+      if (themeIcon) themeIcon.textContent = THEME_ICONS[document.documentElement.getAttribute('data-theme-mode') || 'dark'];
+
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if ((document.documentElement.getAttribute('data-theme-mode') || 'dark') === 'auto') {
+          applyTheme('auto');
+        }
+      });
+
+      const notifBell = document.getElementById('notifBell');
+      const notifDropdown = document.getElementById('notifDropdown');
+      notifBell?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('open');
+      });
+      document.addEventListener('click', () => notifDropdown?.classList.remove('open'));
+      notifDropdown?.addEventListener('click', (e) => e.stopPropagation());
+
+      function showToast(title, text, href) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<div class="toast-title">${title}</div><div class="toast-text">${text}</div>`;
+        if (href) {
+          toast.style.cursor = 'pointer';
+          toast.addEventListener('click', () => { window.location.href = href; });
+        }
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 300);
+        }, 6000);
+      }
+
+      function addNotifToDropdown(title, text) {
+        const list = document.getElementById('notifList');
+        const empty = list.querySelector('.notif-empty');
+        if (empty) empty.remove();
+        const item = document.createElement('div');
+        item.className = 'notif-item';
+        item.innerHTML = `<div class="notif-item-title">${title}</div><div class="notif-item-text">${text}</div>`;
+        list.prepend(item);
+        while (list.children.length > 10) list.removeChild(list.lastChild);
+      }
+
+      function bumpBadge(id) {
+        const badge = document.getElementById(id);
+        if (badge) {
+          badge.textContent = String(Number(badge.textContent || '0') + 1);
+        } else {
+          const link = id === 'badge-support'
+            ? document.querySelector('a[data-path="/support"]')
+            : document.querySelector('a[data-path="/payments"]');
+          if (link) {
+            const span = document.createElement('span');
+            span.className = 'nav-badge';
+            span.id = id;
+            span.textContent = '1';
+            link.appendChild(span);
+          }
+        }
+        document.getElementById('notifDot').style.display = 'block';
+      }
+
+      try {
+        const socket = io();
+
+        socket.on('connect', () => {
+          console.log('✅ Live-уведомления подключены');
+        });
+        socket.on('connect_error', (err) => {
+          console.error('❌ Live-уведомления: ошибка подключения —', err.message);
+        });
+        socket.on('disconnect', (reason) => {
+          console.warn('⚠️ Live-уведомления отключены:', reason);
+        });
+
+        socket.on('admin_notification', (data) => {
+          if (data.type === 'new_support_ticket') {
+            const title = data.payload.fromAI ? '🆘 Эскалация от AI' : '💬 Новый тикет поддержки';
+            const text = `${data.payload.userName}: ${data.payload.preview}`;
+            showToast(title, text, `/support/${data.payload.ticketId}`);
+            addNotifToDropdown(title, text);
+            bumpBadge('badge-support');
+          } else if (data.type === 'new_payment_receipt') {
+            const title = '💳 Новый чек на подтверждение';
+            const text = `${data.payload.userName} — ${data.payload.amount} TJS (${data.payload.plan})`;
+            showToast(title, text, '/payments');
+            addNotifToDropdown(title, text);
+            bumpBadge('badge-payments');
+          }
+        });
+      } catch (err) {
+        console.warn('Live-уведомления недоступны:', err);
+      }
+    })();
+  </script>
+</body>
+</html>

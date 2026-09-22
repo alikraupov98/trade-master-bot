@@ -1,0 +1,56 @@
+<%- include('partials/header', { pageTitle: 'Пользователи' }) %>
+
+<h1>👥 Пользователи</h1>
+
+<form class="filter-bar" method="GET" action="/users">
+  <input type="text" name="search" placeholder="Имя, username или Telegram ID" value="<%= search %>" />
+  <select name="plan" onchange="this.form.submit()">
+    <option value="">Все тарифы</option>
+    <option value="free" <%= plan === 'free' ? 'selected' : '' %>>Free</option>
+    <option value="silver" <%= plan === 'silver' ? 'selected' : '' %>>Silver</option>
+    <option value="gold" <%= plan === 'gold' ? 'selected' : '' %>>Gold</option>
+    <option value="diamond" <%= plan === 'diamond' ? 'selected' : '' %>>Diamond</option>
+  </select>
+  <button type="submit" class="btn">Найти</button>
+</form>
+
+<table class="data-table">
+  <thead>
+    <tr><th>Пользователь</th><th>Тариф</th><th>Уровень/XP</th><th>Регистрация</th><th>Статус</th><th></th></tr>
+  </thead>
+  <tbody>
+    <% users.forEach(u => { %>
+      <tr>
+        <td><%= u.firstName %> <% if (u.username) { %>(@<%= u.username %>)<% } %><br /><small>ID: <%= u.telegramId %></small></td>
+        <td><%= u.subscription.plan %><% if (u.subscription.expiresAt) { %><br /><small>до <%= new Date(u.subscription.expiresAt).toLocaleDateString('ru-RU') %></small><% } %></td>
+        <td>Ур. <%= u.progress.level %> (<%= u.progress.xp %> XP)</td>
+        <td><%= new Date(u.createdAt).toLocaleDateString('ru-RU') %></td>
+        <td><%= u.isBanned ? '🚫 Забанен' : '✅ Активен' %></td>
+        <td class="actions-cell">
+          <form method="POST" action="/users/<%= u._id %>/ban" style="display:inline">
+            <button type="submit" class="btn btn-sm <%= u.isBanned ? '' : 'btn-danger' %>"><%= u.isBanned ? 'Разбанить' : 'Забанить' %></button>
+          </form>
+          <form method="POST" action="/users/<%= u._id %>/plan" style="display:inline">
+            <select name="plan">
+              <option value="free" <%= u.subscription.plan === 'free' ? 'selected' : '' %>>Free</option>
+              <option value="silver" <%= u.subscription.plan === 'silver' ? 'selected' : '' %>>Silver</option>
+              <option value="gold" <%= u.subscription.plan === 'gold' ? 'selected' : '' %>>Gold</option>
+              <option value="diamond" <%= u.subscription.plan === 'diamond' ? 'selected' : '' %>>Diamond</option>
+            </select>
+            <input type="number" name="days" value="30" min="1" style="width:60px" />
+            <button type="submit" class="btn btn-sm">Задать</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+    <% if (users.length === 0) { %><tr><td colspan="6" class="empty-row">Пользователи не найдены</td></tr><% } %>
+  </tbody>
+</table>
+
+<div class="pagination">
+  <% for (let p = 1; p <= totalPages; p++) { %>
+    <a href="/users?page=<%= p %>&search=<%= search %>&plan=<%= plan %>" class="<%= p === page ? 'active' : '' %>"><%= p %></a>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

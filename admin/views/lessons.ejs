@@ -1,0 +1,53 @@
+<%- include('partials/header', { pageTitle: 'Уроки курса' }) %>
+
+<a href="/courses" class="btn btn-sm">← К курсам</a>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+  <h1>📖 Уроки: <%= course.title?.ru || course.title?.tg %></h1>
+  <a href="/courses/<%= course._id %>/lessons/new" class="btn">+ Новый урок вручную</a>
+</div>
+
+<div class="card">
+  <h3>🤖 Добавить ещё уроки через AI</h3>
+  <p class="muted">
+    Продолжает нумерацию с последнего урока (сейчас в курсе <%= lessons.length %> урок(ов) — новые начнутся с №<%= lessons.length + 1 %>).
+    AI видит темы уже существующих уроков и не повторяется. Курс НЕ создаётся заново.
+  </p>
+  <form method="POST" action="/courses/<%= course._id %>/lessons/generate-more" id="generateMoreForm" onsubmit="return onGenerateMoreSubmit()">
+    <label>Сколько уроков добавить</label>
+    <input type="number" name="lessonCount" value="5" min="1" max="50" />
+    <button type="submit" class="btn" id="generateMoreBtn">🤖 Сгенерировать и добавить</button>
+  </form>
+  <p id="generateMoreStatus" class="muted" style="display:none; margin-top:10px;">⏳ Генерирую уроки — не закрывайте страницу, это может занять несколько минут...</p>
+</div>
+
+<table class="data-table">
+  <thead><tr><th>#</th><th>Название</th><th>Тип</th><th></th></tr></thead>
+  <tbody>
+    <% lessons.forEach(l => { %>
+      <tr>
+        <td><%= l.order %></td>
+        <td><%= l.title?.ru || l.title?.tg %><% if (l.generatedByAI) { %> <span class="badge">🤖 AI</span><% } %></td>
+        <td><%= l.type %></td>
+        <td class="actions-cell">
+          <a href="/courses/<%= course._id %>/lessons/<%= l._id %>/edit" class="btn btn-sm">Изменить</a>
+          <form method="POST" action="/courses/<%= course._id %>/lessons/<%= l._id %>/delete" style="display:inline" onsubmit="return confirm('Удалить урок?')">
+            <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+    <% if (lessons.length === 0) { %><tr><td colspan="4" class="empty-row">Уроков пока нет</td></tr><% } %>
+  </tbody>
+</table>
+
+<script>
+  function onGenerateMoreSubmit() {
+    document.getElementById('generateMoreBtn').disabled = true;
+    document.getElementById('generateMoreBtn').textContent = '⏳ Генерирую...';
+    document.getElementById('generateMoreStatus').style.display = 'block';
+    return true;
+  }
+</script>
+
+<%- include('partials/footer') %>

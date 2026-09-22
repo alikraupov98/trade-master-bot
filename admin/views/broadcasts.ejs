@@ -1,0 +1,48 @@
+<%- include('partials/header', { pageTitle: 'Рассылки' }) %>
+
+<h1>📢 Рассылки</h1>
+
+<% if (result) { %>
+  <div class="alert" style="background:#14532d;color:#4ade80">
+    ✅ Отправлено: <%= result.sent %> / <%= result.total %><% if (result.failed) { %>, ошибок: <%= result.failed %><% } %>
+  </div>
+<% } %>
+
+<div class="card">
+  <h3>Новая рассылка</h3>
+  <form method="POST" action="/broadcasts/send" onsubmit="return confirm('Отправить рассылку выбранному сегменту?')">
+    <label>Сегмент получателей</label>
+    <select name="segment">
+      <option value="all">Все пользователи</option>
+      <option value="free">Только Free</option>
+      <option value="silver">Только Silver</option>
+      <option value="gold">Только Gold</option>
+      <option value="diamond">Только Diamond</option>
+    </select>
+
+    <label>Текст сообщения (поддерживает Markdown)</label>
+    <textarea name="text" rows="6" placeholder="Введите текст рассылки..." required></textarea>
+
+    <button type="submit" class="btn">📤 Отправить</button>
+  </form>
+  <p class="muted">Отправка идёт с задержкой ~35мс между сообщениями (лимит Telegram ≈30 сообщений/сек). Для баз свыше нескольких тысяч пользователей рекомендуется вынести в очередь BullMQ.</p>
+</div>
+
+<div class="card">
+  <h3>🕓 Последние рассылки</h3>
+  <table class="data-table">
+    <thead><tr><th>Текст</th><th>Получателей</th><th>Дата</th></tr></thead>
+    <tbody>
+      <% recentBroadcasts.forEach(b => { %>
+        <tr>
+          <td><%= b._id.slice(0, 80) %><%= b._id.length > 80 ? '...' : '' %></td>
+          <td><%= b.count %></td>
+          <td><%= new Date(b.sentAt).toLocaleString('ru-RU') %></td>
+        </tr>
+      <% }) %>
+      <% if (recentBroadcasts.length === 0) { %><tr><td colspan="3" class="empty-row">Рассылок ещё не было</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+
+<%- include('partials/footer') %>

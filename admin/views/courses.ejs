@@ -1,0 +1,66 @@
+<%- include('partials/header', { pageTitle: 'Курсы' }) %>
+
+<div style="display:flex; justify-content:space-between; align-items:center;">
+  <h1>📚 Курсы</h1>
+  <a href="/courses/new" class="btn">+ Новый курс вручную</a>
+</div>
+
+<div class="card">
+  <h3>🤖 Сгенерировать курс с помощью AI</h3>
+  <p class="muted">AI сам придумает структуру курса, напишет тексты уроков и квизы, переведёт на все языки — и сохранит в базу. Дальше курс мгновенно доступен всем пользователям, повторная генерация не требуется. Занимает ~1-2 минуты.</p>
+  <form method="POST" action="/courses/generate-ai" id="generateForm" onsubmit="return onGenerateSubmit()">
+    <label>Категория</label>
+    <select name="category" required>
+      <% categories.forEach(cat => { %><option value="<%= cat %>"><%= cat %></option><% }) %>
+    </select>
+
+    <label>Количество уроков</label>
+    <input type="number" name="lessonCount" value="5" min="1" max="100" />
+    <p class="muted" style="margin-top:4px;">До 100 уроков за раз. Чем больше уроков — тем дольше генерация (примерно 10-15 сек на урок, т.е. 50 уроков ≈ 10-15 минут).</p>
+
+    <label>Требуемый тариф</label>
+    <select name="requiredPlan">
+      <% ['free','silver','gold','diamond'].forEach(p => { %><option value="<%= p %>"><%= p %></option><% }) %>
+    </select>
+
+    <button type="submit" class="btn" id="generateBtn">🤖 Сгенерировать курс</button>
+  </form>
+  <p id="generateStatus" class="muted" style="display:none; margin-top:10px;">⏳ Генерирую курс — это может занять пару минут, не закрывайте страницу...</p>
+</div>
+
+<table class="data-table">
+  <thead><tr><th>Название</th><th>Категория</th><th>Тариф</th><th>Уроков</th><th>Статус</th><th></th></tr></thead>
+  <tbody>
+    <% courses.forEach(c => { %>
+      <tr>
+        <td><%= c.title?.ru || c.title?.tg %><% if (c.generatedByAI) { %> <span class="badge">🤖 AI</span><% } %></td>
+        <td><%= c.category %></td>
+        <td><%= c.requiredPlan %></td>
+        <td><a href="/courses/<%= c._id %>/lessons"><%= c.lessonCount %> урок(ов)</a></td>
+        <td><%= c.isPublished ? '✅ Опубликован' : '⚪ Черновик' %></td>
+        <td class="actions-cell">
+          <a href="/courses/<%= c._id %>/edit" class="btn btn-sm">Изменить</a>
+          <a href="/courses/<%= c._id %>/lessons" class="btn btn-sm">Уроки</a>
+          <form method="POST" action="/courses/<%= c._id %>/toggle-publish" style="display:inline">
+            <button type="submit" class="btn btn-sm"><%= c.isPublished ? 'Снять с публикации' : 'Опубликовать' %></button>
+          </form>
+          <form method="POST" action="/courses/<%= c._id %>/delete" style="display:inline" onsubmit="return confirm('Удалить курс и все его уроки?')">
+            <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+    <% if (courses.length === 0) { %><tr><td colspan="6" class="empty-row">Курсов пока нет</td></tr><% } %>
+  </tbody>
+</table>
+
+<script>
+  function onGenerateSubmit() {
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('generateBtn').textContent = '⏳ Генерирую...';
+    document.getElementById('generateStatus').style.display = 'block';
+    return true;
+  }
+</script>
+
+<%- include('partials/footer') %>

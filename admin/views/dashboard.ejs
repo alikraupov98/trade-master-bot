@@ -1,0 +1,34 @@
+<%- include('partials/header', { pageTitle: 'Дашборд' }) %>
+
+<h1>📊 Дашборд</h1>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value"><%= stats.totalUsers %></div>
+    <div class="stat-label">👥 Всего пользователей</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= stats.activeSubs %></div>
+    <div class="stat-label">💎 Активных подписок</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= stats.todayRevenue %> TJS</div>
+    <div class="stat-label">💳 Выручка сегодня (<%= stats.todayPaymentsCount %> платежей)</div>
+  </div>
+  <div class="stat-card highlight">
+    <div class="stat-value"><%= stats.aiChatsToday %></div>
+    <div class="stat-label">🤖 Активных AI-диалогов сегодня</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Быстрые ссылки</h3>
+  <div class="quick-links">
+    <a href="/ai-chats" class="btn">💬 Мониторинг AI-чатов</a>
+    <a href="/ai-knowledge" class="btn">🧠 База знаний</a>
+    <a href="/ai-usage" class="btn">📊 Статистика Groq</a>
+    <a href="/payments" class="btn">💳 Платежи</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

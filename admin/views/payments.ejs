@@ -1,0 +1,62 @@
+<%- include('partials/header', { pageTitle: 'Платежи' }) %>
+
+<h1>💳 Платежи</h1>
+
+<form class="filter-bar" method="GET" action="/payments">
+  <select name="status" onchange="this.form.submit()">
+    <option value="">Все статусы</option>
+    <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Ожидают</option>
+    <option value="paid" <%= status === 'paid' ? 'selected' : '' %>>Оплачены</option>
+    <option value="failed" <%= status === 'failed' ? 'selected' : '' %>>Отклонены</option>
+  </select>
+  <select name="method" onchange="this.form.submit()">
+    <option value="">Все методы</option>
+    <option value="manual" <%= method === 'manual' ? 'selected' : '' %>>Ручной</option>
+    <option value="alif" <%= method === 'alif' ? 'selected' : '' %>>Alif</option>
+    <option value="eskhata" <%= method === 'eskhata' ? 'selected' : '' %>>Eskhata</option>
+    <option value="humo" <%= method === 'humo' ? 'selected' : '' %>>Humo</option>
+    <option value="crypto" <%= method === 'crypto' ? 'selected' : '' %>>Crypto</option>
+  </select>
+</form>
+
+<table class="data-table">
+  <thead><tr><th>Пользователь</th><th>Тариф</th><th>Сумма</th><th>Метод</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
+  <tbody>
+    <% payments.forEach(p => { %>
+      <tr>
+        <td><%= p.user?.firstName || '—' %><% if (p.user?.username) { %> (@<%= p.user.username %>)<% } %></td>
+        <td><%= p.plan %></td>
+        <td><%= p.amount %> <%= p.currency %></td>
+        <td>
+          <%= p.method %>
+          <% if (p.method === 'manual' && p.receiptFileId) { %>
+            <br /><a href="/payments/<%= p._id %>/receipt" target="_blank" class="btn btn-sm">📄 Чек</a>
+          <% } %>
+        </td>
+        <td>
+          <%= p.status === 'paid' ? '✅ Оплачен' : p.status === 'pending' ? '⏳ Ожидает' : p.status === 'failed' ? '❌ Отклонён' : p.status %>
+        </td>
+        <td><%= new Date(p.createdAt).toLocaleString('ru-RU') %></td>
+        <td>
+          <% if (p.status === 'pending') { %>
+            <form method="POST" action="/payments/<%= p._id %>/approve" style="display:inline">
+              <button type="submit" class="btn btn-sm">✅ Подтвердить</button>
+            </form>
+            <form method="POST" action="/payments/<%= p._id %>/reject" style="display:inline">
+              <button type="submit" class="btn btn-sm btn-danger">❌ Отклонить</button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+    <% if (payments.length === 0) { %><tr><td colspan="7" class="empty-row">Платежи не найдены</td></tr><% } %>
+  </tbody>
+</table>
+
+<div class="pagination">
+  <% for (let p = 1; p <= totalPages; p++) { %>
+    <a href="/payments?page=<%= p %>" class="<%= p === page ? 'active' : '' %>"><%= p %></a>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,67 @@
+<%- include('partials/header', { pageTitle: 'Аналитика' }) %>
+
+<h1>📉 Аналитика (последние <%= daysRange %> дн.)</h1>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value"><%= totalNewUsers %></div>
+    <div class="stat-label">Новых пользователей</div>
+  </div>
+  <div class="stat-card highlight">
+    <div class="stat-value"><%= totalRevenue %> TJS</div>
+    <div class="stat-label">Выручка за период</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>👥 Новые пользователи по дням</h3>
+  <% const maxUsers = Math.max(1, ...chartData.map(d => d.newUsers)); %>
+  <div class="bar-chart">
+    <% chartData.forEach(d => { %>
+      <div class="bar-col">
+        <div class="bar" style="height: <%= Math.round((d.newUsers / maxUsers) * 100) %>%" title="<%= d.newUsers %>"></div>
+        <span class="bar-label"><%= d.date.slice(5) %></span>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<div class="card">
+  <h3>💰 Выручка по дням (TJS)</h3>
+  <% const maxRevenue = Math.max(1, ...chartData.map(d => d.revenue)); %>
+  <div class="bar-chart">
+    <% chartData.forEach(d => { %>
+      <div class="bar-col">
+        <div class="bar bar-money" style="height: <%= Math.round((d.revenue / maxRevenue) * 100) %>%" title="<%= d.revenue %> TJS"></div>
+        <span class="bar-label"><%= d.date.slice(5) %></span>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<div class="card">
+  <h3>🤖 Сообщений AI по дням</h3>
+  <% const maxAi = Math.max(1, ...chartData.map(d => d.aiMessages)); %>
+  <div class="bar-chart">
+    <% chartData.forEach(d => { %>
+      <div class="bar-col">
+        <div class="bar bar-ai" style="height: <%= Math.round((d.aiMessages / maxAi) * 100) %>%" title="<%= d.aiMessages %>"></div>
+        <span class="bar-label"><%= d.date.slice(5) %></span>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<div class="card">
+  <h3>💎 Распределение по тарифам</h3>
+  <table class="data-table">
+    <thead><tr><th>Тариф</th><th>Пользователей</th></tr></thead>
+    <tbody>
+      <% planDistribution.forEach(p => { %>
+        <tr><td><%= p._id %></td><td><%= p.count %></td></tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<%- include('partials/footer') %>

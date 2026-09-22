@@ -1,0 +1,65 @@
+version: '3.9'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: tm_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=trademaster_ai_tj
+
+  redis:
+    image: redis:7-alpine
+    container_name: tm_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tm_bot
+    restart: unless-stopped
+    command: node src/index.js
+    env_file: .env
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/trademaster_ai_tj
+      - REDIS_HOST=redis
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tm_admin
+    restart: unless-stopped
+    command: node admin/server.js
+    env_file: .env
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/trademaster_ai_tj
+      - REDIS_HOST=redis
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+
+volumes:
+  mongo_data:
+  redis_data:

@@ -1,0 +1,80 @@
+<%- include('partials/header', { pageTitle: course ? 'Редактировать курс' : 'Новый курс' }) %>
+
+<h1><%= course ? '✏️ Редактировать курс' : '➕ Новый курс' %></h1>
+
+<div class="card">
+  <form method="POST" action="<%= course ? '/courses/' + course._id : '/courses' %>">
+    <label>Название (тоҷикӣ)</label>
+    <input type="text" name="titleTg" id="titleTg" value="<%= course?.title?.tg || '' %>" required />
+    <label>Название (русский)</label>
+    <input type="text" name="titleRu" id="titleRu" value="<%= course?.title?.ru || '' %>" required />
+    <label>Название (English)</label>
+    <input type="text" name="titleEn" id="titleEn" value="<%= course?.title?.en || '' %>" required />
+
+    <label>Описание (тоҷикӣ)</label>
+    <textarea name="descTg" id="descTg" rows="3"><%= course?.description?.tg || '' %></textarea>
+    <label>Описание (русский)</label>
+    <textarea name="descRu" id="descRu" rows="3"><%= course?.description?.ru || '' %></textarea>
+    <label>Описание (English)</label>
+    <textarea name="descEn" id="descEn" rows="3"><%= course?.description?.en || '' %></textarea>
+
+    <button type="button" class="btn" style="background:#0891b2" onclick="translateFields()">🌍 Перевести с русского (AI)</button>
+    <p id="translateStatus" class="muted"></p>
+
+    <label>Категория</label>
+    <select name="category" required>
+      <% categories.forEach(cat => { %>
+        <option value="<%= cat %>" <%= course?.category === cat ? 'selected' : '' %>><%= cat %></option>
+      <% }) %>
+    </select>
+
+    <label>Требуемый тариф</label>
+    <select name="requiredPlan">
+      <% ['free','silver','gold','diamond'].forEach(p => { %>
+        <option value="<%= p %>" <%= course?.requiredPlan === p ? 'selected' : '' %>><%= p %></option>
+      <% }) %>
+    </select>
+
+    <label>URL обложки (опционально)</label>
+    <input type="text" name="coverImage" value="<%= course?.coverImage || '' %>" />
+
+    <label>Порядок сортировки</label>
+    <input type="number" name="order" value="<%= course?.order || 0 %>" />
+
+    <label class="checkbox-label" style="margin-top:14px">
+      <input type="checkbox" name="isPublished" <%= (!course || course.isPublished) ? 'checked' : '' %> />
+      Опубликован (виден пользователям)
+    </label>
+
+    <button type="submit" class="btn">💾 Сохранить</button>
+    <a href="/courses" class="btn" style="background:#374151">Отмена</a>
+  </form>
+</div>
+
+<script>
+  async function translateOne(sourceId, targetIds) {
+    const text = document.getElementById(sourceId).value;
+    if (!text) return;
+    for (const [id, lang] of targetIds) {
+      const el = document.getElementById(id);
+      if (el.value) continue; // не перезаписываем уже заполненные поля
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, targetLanguage: lang }),
+      });
+      const data = await res.json();
+      if (data.success) el.value = data.translated;
+    }
+  }
+
+  async function translateFields() {
+    const status = document.getElementById('translateStatus');
+    status.textContent = '⏳ Перевожу...';
+    await translateOne('titleRu', [['titleTg', 'tg'], ['titleEn', 'en']]);
+    await translateOne('descRu', [['descTg', 'tg'], ['descEn', 'en']]);
+    status.textContent = '✅ Готово (проверьте и подправьте при необходимости)';
+  }
+</script>
+
+<%- include('partials/footer') %>

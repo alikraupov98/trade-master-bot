@@ -1,0 +1,52 @@
+<%- include('partials/header', { pageTitle: 'AI-Диалог' }) %>
+
+<a href="/ai-chats" class="btn btn-sm">← Ко всем диалогам</a>
+
+<h1>💬 Диалог с <%= chat.user?.firstName || 'пользователем' %></h1>
+<p class="muted">Telegram ID: <%= chat.user?.telegramId %> · Роль: <%= chat.role %></p>
+
+<div class="chat-thread">
+  <% chat.messages.forEach(msg => { %>
+    <div class="chat-bubble <%= msg.role %>">
+      <div class="chat-meta">
+        <strong><%= msg.role === 'user' ? '👤 Пользователь' : msg.role === 'assistant' ? '🤖 AI (' + (msg.provider || 'groq') + ')' : 'Система' %></strong>
+        <span><%= new Date(msg.createdAt).toLocaleString('ru-RU') %></span>
+        <% if (msg.ratedGood === true) { %><span class="badge badge-good">👍</span><% } %>
+        <% if (msg.ratedGood === false) { %><span class="badge badge-bad">👎</span><% } %>
+      </div>
+      <div class="chat-text"><%= msg.content %></div>
+    </div>
+  <% }) %>
+</div>
+
+<div class="card">
+  <h3>Ответить вручную (вместо AI)</h3>
+  <form id="replyForm">
+    <textarea name="text" rows="4" placeholder="Введите ответ, который будет отправлен пользователю в Telegram..." required></textarea>
+    <button type="submit" class="btn">Отправить</button>
+  </form>
+  <p id="replyStatus"></p>
+</div>
+
+<script>
+  document.getElementById('replyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = e.target.text.value;
+    const statusEl = document.getElementById('replyStatus');
+    statusEl.textContent = 'Отправка...';
+    try {
+      const res = await fetch(window.location.pathname + '/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      statusEl.textContent = data.success ? '✅ Отправлено' : '❌ Ошибка отправки';
+      if (data.success) e.target.reset();
+    } catch (err) {
+      statusEl.textContent = '❌ Ошибка сети';
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

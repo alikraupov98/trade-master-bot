@@ -1,0 +1,52 @@
+<%- include('partials/header', { pageTitle: 'AI-Чаты' }) %>
+
+<h1>💬 AI-Чаты пользователей</h1>
+
+<form class="filter-bar" method="GET" action="/ai-chats">
+  <input type="text" name="search" placeholder="Поиск по имени, username или Telegram ID" value="<%= search %>" />
+  <label class="checkbox-label">
+    <input type="checkbox" name="escalated" value="1" <%= escalated ? 'checked' : '' %> onchange="this.form.submit()" />
+    Только эскалированные
+  </label>
+  <button type="submit" class="btn">Найти</button>
+</form>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Пользователь</th>
+      <th>Роль AI</th>
+      <th>Сообщений</th>
+      <th>Эскалирован</th>
+      <th>Обновлён</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% chats.forEach(chat => { %>
+      <tr>
+        <td>
+          <%= chat.user?.firstName || '—' %>
+          <% if (chat.user?.username) { %> (@<%= chat.user.username %>)<% } %>
+          <br /><small>ID: <%= chat.user?.telegramId %></small>
+        </td>
+        <td><%= chat.role %></td>
+        <td><%= chat.messages.length %></td>
+        <td><%= chat.escalatedToHuman ? '🆘 Да' : '—' %></td>
+        <td><%= new Date(chat.updatedAt).toLocaleString('ru-RU') %></td>
+        <td><a href="/ai-chats/<%= chat._id %>" class="btn btn-sm">Открыть</a></td>
+      </tr>
+    <% }) %>
+    <% if (chats.length === 0) { %>
+      <tr><td colspan="6" class="empty-row">Диалоги не найдены</td></tr>
+    <% } %>
+  </tbody>
+</table>
+
+<div class="pagination">
+  <% for (let p = 1; p <= totalPages; p++) { %>
+    <a href="/ai-chats?page=<%= p %>&search=<%= search %>" class="<%= p === page ? 'active' : '' %>"><%= p %></a>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

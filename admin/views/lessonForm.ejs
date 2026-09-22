@@ -1,0 +1,71 @@
+<%- include('partials/header', { pageTitle: lesson ? 'Редактировать урок' : 'Новый урок' }) %>
+
+<a href="/courses/<%= course._id %>/lessons" class="btn btn-sm">← К урокам</a>
+
+<h1 style="margin-top:10px"><%= lesson ? '✏️ Редактировать урок' : '➕ Новый урок' %></h1>
+<p class="muted">Курс: <%= course.title?.ru || course.title?.tg %></p>
+
+<div class="card">
+  <form method="POST" action="<%= lesson ? `/courses/${course._id}/lessons/${lesson._id}` : `/courses/${course._id}/lessons` %>">
+    <label>Название (тоҷикӣ)</label>
+    <input type="text" name="titleTg" id="titleTg" value="<%= lesson?.title?.tg || '' %>" required />
+    <label>Название (русский)</label>
+    <input type="text" name="titleRu" id="titleRu" value="<%= lesson?.title?.ru || '' %>" required />
+    <label>Название (English)</label>
+    <input type="text" name="titleEn" id="titleEn" value="<%= lesson?.title?.en || '' %>" required />
+
+    <label>Содержание (тоҷикӣ)</label>
+    <textarea name="contentTg" id="contentTg" rows="6"><%= lesson?.content?.tg || '' %></textarea>
+    <label>Содержание (русский)</label>
+    <textarea name="contentRu" id="contentRu" rows="6"><%= lesson?.content?.ru || '' %></textarea>
+    <label>Содержание (English)</label>
+    <textarea name="contentEn" id="contentEn" rows="6"><%= lesson?.content?.en || '' %></textarea>
+
+    <button type="button" class="btn" style="background:#0891b2" onclick="translateFields()">🌍 Перевести с русского (AI)</button>
+    <p id="translateStatus" class="muted"></p>
+
+    <label>Тип урока</label>
+    <select name="type">
+      <% lessonTypes.forEach(t => { %>
+        <option value="<%= t %>" <%= lesson?.type === t ? 'selected' : '' %>><%= t %></option>
+      <% }) %>
+    </select>
+
+    <label>Медиа-ссылки (через запятую, для photo/video/voice/pdf)</label>
+    <input type="text" name="mediaUrls" value="<%= (lesson?.mediaUrls || []).join(', ') %>" placeholder="https://..., https://..." />
+
+    <label>Порядок в курсе</label>
+    <input type="number" name="order" value="<%= lesson?.order || 0 %>" />
+
+    <button type="submit" class="btn">💾 Сохранить</button>
+    <a href="/courses/<%= course._id %>/lessons" class="btn" style="background:#374151">Отмена</a>
+  </form>
+</div>
+
+<script>
+  async function translateOne(sourceId, targetIds) {
+    const text = document.getElementById(sourceId).value;
+    if (!text) return;
+    for (const [id, lang] of targetIds) {
+      const el = document.getElementById(id);
+      if (el.value) continue;
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, targetLanguage: lang }),
+      });
+      const data = await res.json();
+      if (data.success) el.value = data.translated;
+    }
+  }
+
+  async function translateFields() {
+    const status = document.getElementById('translateStatus');
+    status.textContent = '⏳ Перевожу...';
+    await translateOne('titleRu', [['titleTg', 'tg'], ['titleEn', 'en']]);
+    await translateOne('contentRu', [['contentTg', 'tg'], ['contentEn', 'en']]);
+    status.textContent = '✅ Готово (проверьте и подправьте при необходимости)';
+  }
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,41 @@
+<%- include('partials/header', { pageTitle: 'AI-Статистика' }) %>
+
+<h1>📊 Статистика использования AI</h1>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value"><%= totalChats %></div>
+    <div class="stat-label">Всего AI-диалогов</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= totalMessages %></div>
+    <div class="stat-label">Всего сообщений</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= escalatedCount %></div>
+    <div class="stat-label">🆘 Эскалировано специалисту</div>
+  </div>
+  <div class="stat-card highlight">
+    <div class="stat-value"><%= satisfactionRate !== null ? satisfactionRate + '%' : '—' %></div>
+    <div class="stat-label">👍 Удовлетворённость (<%= goodCount %> / <%= goodCount + badCount %>)</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Использование по провайдерам</h3>
+  <table class="data-table">
+    <thead><tr><th>Провайдер</th><th>Ответов</th><th>Токенов</th></tr></thead>
+    <tbody>
+      <% topProviders.forEach(p => { %>
+        <tr>
+          <td><%= p._id || 'неизвестно' %></td>
+          <td><%= p.count %></td>
+          <td><%= p.tokens.toLocaleString('ru-RU') %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <p class="muted">Groq: бесплатный тариф — 30 запросов/мин, 14 400/день. Следите, чтобы доля fallback-провайдеров не росла — это сигнал приближения к лимиту.</p>
+</div>
+
+<%- include('partials/footer') %>

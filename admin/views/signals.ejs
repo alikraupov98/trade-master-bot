@@ -1,0 +1,47 @@
+<%- include('partials/header', { pageTitle: 'Сигналы' }) %>
+
+<div style="display:flex; justify-content:space-between; align-items:center;">
+  <h1>📈 Торговые сигналы</h1>
+  <a href="/signals/new" class="btn">+ Новый сигнал</a>
+</div>
+
+<% if (result) { %>
+  <div class="alert" style="background:#14532d;color:#4ade80">
+    ✅ Сигнал <%= result.pair %> разослан <%= result.sent %> пользователям
+  </div>
+<% } %>
+
+<table class="data-table">
+  <thead><tr><th>Пара</th><th>Направление</th><th>Entry</th><th>SL</th><th>TP</th><th>Тариф</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
+  <tbody>
+    <% signals.forEach(s => { %>
+      <tr>
+        <td><%= s.pair %></td>
+        <td><%= s.direction === 'long' ? '📈 LONG' : '📉 SHORT' %></td>
+        <td><%= s.entryPrice %></td>
+        <td><%= s.stopLoss %></td>
+        <td><%= s.takeProfit.join(', ') %></td>
+        <td><%= s.requiredPlan %></td>
+        <td>
+          <%= s.status === 'active' ? '🟢 Активен' : s.status === 'closed_profit' ? '✅ Профит' : s.status === 'closed_loss' ? '❌ Убыток' : '⚪ Отменён' %>
+        </td>
+        <td><%= new Date(s.createdAt).toLocaleString('ru-RU') %></td>
+        <td>
+          <% if (s.status === 'active') { %>
+            <form method="POST" action="/signals/<%= s._id %>/close" style="display:inline">
+              <select name="status" style="width:auto; display:inline-block; padding:4px 8px;">
+                <option value="closed_profit">Закрыть в профит</option>
+                <option value="closed_loss">Закрыть в убыток</option>
+                <option value="cancelled">Отменить</option>
+              </select>
+              <button type="submit" class="btn btn-sm">Применить</button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+    <% if (signals.length === 0) { %><tr><td colspan="9" class="empty-row">Сигналов пока нет</td></tr><% } %>
+  </tbody>
+</table>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,68 @@
+<%- include('partials/header', { pageTitle: 'Тикет поддержки' }) %>
+
+<a href="/support" class="btn btn-sm">← Ко всем тикетам</a>
+
+<h1>💬 <%= ticket.subject %></h1>
+<p class="muted">
+  <%= ticket.user?.firstName || '—' %><% if (ticket.user?.username) { %> (@<%= ticket.user.username %>)<% } %>
+  · Telegram ID: <%= ticket.user?.telegramId %> · Статус: <%= ticket.status %>
+</p>
+
+<div class="chat-thread">
+  <% ticket.messages.forEach(msg => { %>
+    <div class="chat-bubble <%= msg.from === 'user' ? 'user' : 'assistant' %>">
+      <div class="chat-meta">
+        <strong><%= msg.from === 'user' ? '👤 Пользователь' : msg.from === 'ai' ? '🤖 AI' : '🛡 Администратор' %></strong>
+        <span><%= new Date(msg.createdAt).toLocaleString('ru-RU') %></span>
+      </div>
+      <div class="chat-text"><%= msg.text %></div>
+    </div>
+  <% }) %>
+</div>
+
+<% if (ticket.status !== 'closed') { %>
+<div class="card">
+  <h3>Ответить пользователю</h3>
+  <form id="replyForm">
+    <textarea name="text" rows="4" placeholder="Введите ответ, который получит пользователь в Telegram..." required></textarea>
+    <button type="submit" class="btn">Отправить</button>
+  </form>
+  <p id="replyStatus"></p>
+</div>
+<% } %>
+
+<form method="POST" action="/support/<%= ticket._id %>/<%= ticket.status === 'closed' ? 'reopen' : 'close' %>" style="display:inline">
+  <button type="submit" class="btn <%= ticket.status === 'closed' ? '' : 'btn-danger' %>">
+    <%= ticket.status === 'closed' ? '🔓 Переоткрыть' : '🔒 Закрыть тикет' %>
+  </button>
+</form>
+
+<script>
+  const form = document.getElementById('replyForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = e.target.text.value;
+      const statusEl = document.getElementById('replyStatus');
+      statusEl.textContent = 'Отправка...';
+      try {
+        const res = await fetch(window.location.pathname + '/reply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusEl.textContent = '✅ Отправлено';
+          setTimeout(() => window.location.reload(), 800);
+        } else {
+          statusEl.textContent = '❌ Ошибка отправки';
+        }
+      } catch (err) {
+        statusEl.textContent = '❌ Ошибка сети';
+      }
+    });
+  }
+</script>
+
+<%- include('partials/footer') %>

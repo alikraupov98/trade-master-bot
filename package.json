@@ -1,0 +1,52 @@
+{
+  "name": "trade-master-ai-tj",
+  "version": "1.0.0",
+  "description": "AI-обучающий трейдинг-бот для Telegram (Таджикистан) с интеграцией Groq LLM",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/bootstrap.js",
+    "dev": "node --watch src/index.js",
+    "admin": "node admin/bootstrap.js",
+    "admin:dev": "node --watch admin/server.js",
+    "seed": "node src/jobs/seed.js",
+    "lint": "eslint src admin"
+  },
+  "dependencies": {
+    "axios": "^1.7.3",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^5.12.0",
+    "cohere-ai": "^7.11.2",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "express-async-errors": "^3.1.1",
+    "express-session": "^1.18.0",
+    "fluent-ffmpeg": "^2.1.3",
+    "groq-sdk": "^0.5.0",
+    "helmet": "^7.1.0",
+    "i18next": "^23.12.2",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.8.0",
+    "mongoose": "^8.5.1",
+    "msedge-tts": "^2.0.7",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "pdf-parse": "^1.1.1",
+    "socket.io": "^4.7.5",
+    "telegraf": "^4.16.3",
+    "uuid": "^10.0.0",
+    "winston": "^3.13.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.8.0",
+    "nodemon": "^3.1.4"
+  }
+}

@@ -1,0 +1,78 @@
+<%- include('partials/header', { pageTitle: 'Настройки' }) %>
+
+<h1>⚙️ Настройки</h1>
+
+<% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+<% if (success) { %>
+  <div class="alert" style="background:#14532d;color:#4ade80">✅ <%= success %>. Для Telegram-бота (отдельный процесс) не забудьте перезапустить: <code>npm start</code>.</div>
+<% } %>
+
+<div class="card">
+  <h3>Статус интеграций</h3>
+  <table class="data-table">
+    <tbody>
+      <tr><td>Groq (основной AI)</td><td><%= integrations.groq ? '✅ Подключён' : '❌ Не настроен' %></td></tr>
+      <tr><td>OpenRouter (fallback)</td><td><%= integrations.openrouter ? '✅ Подключён' : '⚪ Не настроен' %></td></tr>
+      <tr><td>Google Gemini (fallback)</td><td><%= integrations.gemini ? '✅ Подключён' : '⚪ Не настроен' %></td></tr>
+      <tr><td>Together.ai (fallback)</td><td><%= integrations.together ? '✅ Подключён' : '⚪ Не настроен' %></td></tr>
+      <tr><td>Cohere (эмбеддинги RAG)</td><td><%= integrations.cohere ? '✅ Подключён' : '⚪ Не настроен' %></td></tr>
+      <tr><td>Alif Mobi</td><td><%= integrations.alif ? '✅ Подключён' : '⚪ Не настроен' %></td></tr>
+      <tr><td>Eskhata Bank</td><td><%= integrations.eskhata ? '✅ Подключён' : '⚪ Не настроен' %></td></tr>
+      <tr><td>Humo</td><td><%= integrations.humo ? '✅ Подключён' : '⚪ Не настроен' %></td></tr>
+      <tr><td>NowPayments (крипто)</td><td><%= integrations.nowpayments ? '✅ Подключён' : '⚪ Не настроен' %></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<form method="POST" action="/settings/config">
+  <% settingsSchema.forEach(group => { %>
+    <div class="card">
+      <h3><%= group.group %></h3>
+      <% group.fields.forEach(field => { %>
+        <label><%= field.label %></label>
+        <% if (field.type === 'model-select') { %>
+          <% if (groqModels && groqModels.length > 0) { %>
+            <select name="<%= field.key %>">
+              <% if (values[field.key] && !groqModels.includes(values[field.key])) { %>
+                <option value="<%= values[field.key] %>" selected><%= values[field.key] %> (текущее, не найдено в списке)</option>
+              <% } %>
+              <% groqModels.forEach(modelId => { %>
+                <option value="<%= modelId %>" <%= values[field.key] === modelId ? 'selected' : '' %>><%= modelId %></option>
+              <% }) %>
+            </select>
+          <% } else { %>
+            <input type="text" name="<%= field.key %>" value="<%= values[field.key] || '' %>" placeholder="например: openai/gpt-oss-120b" />
+            <p class="muted" style="margin-top:2px;">⚠️ Не удалось получить список моделей от Groq (проверьте, что API-ключ сохранён и верен) — введите название модели вручную.</p>
+          <% } %>
+        <% } else { %>
+          <input
+            type="<%= field.type === 'password' ? 'password' : (field.type === 'number' ? 'number' : 'text') %>"
+            name="<%= field.key %>"
+            value="<%= field.type === 'password' ? '' : (values[field.key] || '') %>"
+            placeholder="<%= field.type === 'password' ? (values[field.key] ? '••••••••  (оставьте пустым, чтобы не менять)' : 'не задано') : '' %>"
+          />
+        <% } %>
+        <% if (field.hint) { %><p class="muted" style="margin-top:2px;"><%= field.hint %></p><% } %>
+      <% }) %>
+    </div>
+  <% }) %>
+
+  <button type="submit" class="btn">💾 Сохранить все настройки</button>
+  <p class="muted" style="margin-top:10px;">
+    Изменения сразу применяются в админ-панели. Для Telegram-бота (отдельный процесс) нужен перезапуск
+    <code>npm start</code>, чтобы новые ключи/цены точно применились — некоторые из них считываются один раз при запуске.
+  </p>
+</form>
+
+<div class="card">
+  <h3>Сменить пароль</h3>
+  <form method="POST" action="/settings/password">
+    <label>Текущий пароль</label>
+    <input type="password" name="currentPassword" required />
+    <label>Новый пароль</label>
+    <input type="password" name="newPassword" required minlength="8" />
+    <button type="submit" class="btn">Сменить пароль</button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>
