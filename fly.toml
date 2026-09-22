@@ -4,14 +4,24 @@ primary_region = "fra"
 [build]
   dockerfile = "Dockerfile"
 
+# Основной HTTP-сервис (Админка + API)
 [http_service]
   internal_port = 3000
   force_https = true
   auto_stop_machines = false
   auto_start_machines = true
   min_machines_running = 1
+  
+  # Разрешаем большие запросы (если будешь грузить файлы)
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health" # Убедись, что у тебя есть такой эндпоинт, иначе убери эту секцию
 
+# Выделяем больше ресурсов
 [[vm]]
   cpu_kind = "shared"
   cpus = 1
-  memory_mb = 256
+  memory_mb = 512  # <--- Увеличили вдвое! Критично для стабильности
