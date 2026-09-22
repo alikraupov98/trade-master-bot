@@ -26,6 +26,9 @@ import { startCronJobs } from './jobs/index.js';
 
 const HEALTH_PORT = Number(process.env.HEALTH_PORT || 3001);
 
+const mu = process.env.MONGO_URI || '';
+console.log('🔍 DEBUG MONGO_URI:', mu.includes('.mongodb.net') ? 'домен OK, длина ' + mu.length : 'БИТАЯ СТРОКА: ' + mu.slice(0, 50));
+
 /**
  * Глобальная защита от краша всего процесса. Сторонние библиотеки (например, msedge-tts) иногда
  * бросают исключения из внутренних callback'ов асинхронных потоков — такие ошибки НЕ попадают
