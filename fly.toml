@@ -1,27 +1,29 @@
-app = "trade-master-bot"
-primary_region = "fra"
+# fly.toml app configuration file generated for trade-master-bot-zsdbug on 2026-09-23T04:45:49Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'trade-master-bot-zsdbug'
+primary_region = 'ams'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
-# Основной HTTP-сервис (Админка + API)
 [http_service]
-  internal_port = 3000
+  internal_port = 8080
   force_https = true
-  auto_stop_machines = false
+  auto_stop_machines = 'off'
   auto_start_machines = true
   min_machines_running = 1
-  
-  # Разрешаем большие запросы (если будешь грузить файлы)
-  [[http_service.checks]]
-    grace_period = "10s"
-    interval = "30s"
-    method = "GET"
-    timeout = "5s"
-    path = "/health" # Убедись, что у тебя есть такой эндпоинт, иначе убери эту секцию
 
-# Выделяем больше ресурсов
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/health'
+
 [[vm]]
-  cpu_kind = "shared"
+  cpu_kind = 'shared'
   cpus = 1
-  memory_mb = 512  # <--- Увеличили вдвое! Критично для стабильности
+  memory_mb = 512
