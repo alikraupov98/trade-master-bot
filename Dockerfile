@@ -1,22 +1,27 @@
-# ИСПОЛЬЗУЕМ DEBIAN SLIM, А НЕ ALPINE!
-# Это решает проблему SSL alert number 80 с MongoDB Atlas
-FROM node:20-slim
+FROM node:20-bookworm-slim
+
+# ВАЖНО: используем glibc-образ (bookworm-slim), а НЕ alpine — Alpine использует musl libc с
+# урезанной сборкой OpenSSL, которая не проходит TLS-рукопожатие с MongoDB Atlas и падает с
+# ошибкой "SSL alert number 80 / tlsv1 alert internal error". На Debian-based образах эта
+# проблема не воспроизводится.
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Устанавливаем ffmpeg и необходимые библиотеки через apt-get (для Debian)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ffmpeg ca-certificates openssl && \
-    rm -rf /var/lib/apt/lists/*
-
 COPY package*.json ./
-
-# Устанавливаем зависимости Node.js
-RUN npm install --legacy-peer-deps
+RUN npm install --omit=dev
 
 COPY . .
 
-EXPOSE 3000 3001
+RUN mkdir -p uploads/photos uploads/videos uploads/temp logs
 
-# Запускаем бота и админку через правильные bootstrap файлы
-CMD sh -c "node src/bootstrap.js & node admin/bootstrap.js"
+EXPOSE 3000
+
+# ВАЖНО: запускаем через bootstrap.js, а не index.js напрямую — bootstrap сначала подгружает
+# настройки, сохранённые через админ-панель (БД), в process.env, и только потом стартует
+# основное приложение. Прямой запуск index.js эти настройки просто не увидит.
+CMD ["node", "src/bootstrap.js"]
