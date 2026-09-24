@@ -19,25 +19,12 @@ export async function connectDatabase() {
     logger.warn('⚠️ MongoDB отключена, повторное подключение...');
   });
 
-  try {
-    await mongoose.connect(uri, {
-      maxPoolSize: 20,
-      serverSelectionTimeoutMS: 15000, // Увеличен таймаут ожидания ответа сервера
-      socketTimeoutMS: 45000,          // Таймаут сокета
-      
-      // 🔥 ГЛАВНОЕ ИСПРАВЛЕНИЕ ДЛЯ FLY.IO + ATLAS SSL ERROR 80
-      // Позволяет игнорировать проблемы с цепочкой сертификатов в контейнеризованной среде
-      tlsAllowInvalidCertificates: true, 
-      
-      // Дополнительно: принудительно включаем TLS, если он не указан в URI явно
-      ssl: true,
-    });
-    
-    return mongoose.connection;
-  } catch (error) {
-    logger.error(`💥 Критическая ошибка при первичном подключении к MongoDB: ${error.message}`);
-    throw error;
-  }
+  await mongoose.connect(uri, {
+    maxPoolSize: 20,
+    serverSelectionTimeoutMS: 10000,
+  });
+
+  return mongoose.connection;
 }
 
 export default mongoose;
