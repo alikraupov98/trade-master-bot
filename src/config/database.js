@@ -4,36 +4,30 @@ import logger from '../utils/errorHandler.js';
 export async function connectDatabase() {
   const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/trademaster_ai_tj';
 
-  mongoose.set('strictQuery', true);
+  // Настройки подключения
+  const options = {
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    
+    // 🔥 КРИТИЧЕСКИ ВАЖНО ДЛЯ FLY.IO + ATLAS SSL ERROR 80
+    // Игнорируем ошибки проверки сертификатов в контейнеризованной среде
+    tlsAllowInvalidCertificates: true, 
+    
+    // Явно указываем использовать TLS (Atlas требует этого)
+    ssl: true,
+    
+    // Отключаем строгую проверку имени хоста, если есть проблемы с DNS/SNI
+    tlsAllowInvalidHostnames: true,
+  };
 
-  mongoose.connection.on('connected', () => {
-    logger.info('✅ MongoDB подключена');
-  });
-
-  mongoose.connection.on('error', (err) => {
-    logger.error(`❌ Ошибка MongoDB: ${err?.message || err}`, err);
-  });
-
-  mongoose.connection.on('disconnected', () => {
-    logger.warn('⚠️ MongoDB отключена, повторное подключение...');
-  });
-
-  let attempt = 0;
-  while (true) {
-    attempt += 1;
-    try {
-      await mongoose.connect(uri, {
-        maxPoolSize: 20,
-        serverSelectionTimeoutMS: 10000,
-      });
-      return mongoose.connection;
-    } catch (err) {
-      const delay = Math.min(30_000, 2_000 * attempt);
-      logger.error(
-        `❌ Не удалось подключиться к MongoDB (попытка ${attempt}): ${err?.message || err}. Повтор через ${Math.round(delay / 1000)}с...`,
-      );
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
+  try {
+    await mongoose.connect(uri, options);
+    logger.info('✅ MongoDB подключена успешно');
+    return mongoose.connection;
+  } catch (error) {
+    logger.error(`❌ Ошибка подключения к MongoDB: ${error.message}`);
+    throw error;
   }
 }
 
