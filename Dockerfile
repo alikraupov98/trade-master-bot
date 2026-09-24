@@ -1,9 +1,8 @@
-# Используем Node 18 (более стабильная работа с Atlas TLS)
+# Используем Node 18 Slim для стабильной работы SSL с Atlas
 FROM node:18-slim
 
 WORKDIR /app
 
-# Устанавливаем ffmpeg и сертификаты
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ffmpeg \

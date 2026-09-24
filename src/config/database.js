@@ -22,6 +22,8 @@ export async function connectDatabase() {
   await mongoose.connect(uri, {
     maxPoolSize: 20,
     serverSelectionTimeoutMS: 10000,
+    tlsAllowInvalidCertificates: true,
+    ssl: true,
   });
 
   return mongoose.connection;
