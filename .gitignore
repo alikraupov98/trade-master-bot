@@ -11,3 +11,4 @@ uploads/temp/*
 .DS_Store
 dist/
 coverage/
+dump.rdb
