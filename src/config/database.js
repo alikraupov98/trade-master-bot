@@ -9,13 +9,14 @@ export async function connectDatabase() {
     maxPoolSize: 10,
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
-    
+    ssl: true,                          // Обязательное включение TLS
+  tlsAllowInvalidCertificates: true,  // Игнорируем ошибки верификации цепочки
+
     // 🔥 КРИТИЧЕСКИ ВАЖНО ДЛЯ FLY.IO + ATLAS SSL ERROR 80
     // Игнорируем ошибки проверки сертификатов в контейнеризованной среде
     tlsAllowInvalidCertificates: true, 
     
     // Явно указываем использовать TLS (Atlas требует этого)
-    ssl: true,
     
     // Отключаем строгую проверку имени хоста, если есть проблемы с DNS/SNI
     tlsAllowInvalidHostnames: true,
