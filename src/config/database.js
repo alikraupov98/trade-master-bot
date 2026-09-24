@@ -23,8 +23,10 @@ export async function connectDatabase() {
     attempt += 1;
     try {
       await mongoose.connect(uri, {
+        tlsAllowInvalidCertificates: true, 
+        serverSelectionTimeoutMS: 15000,
+        socketTimeoutMS: 45000,
         maxPoolSize: 20,
-        serverSelectionTimeoutMS: 10000,
       });
       return mongoose.connection;
     } catch (err) {
